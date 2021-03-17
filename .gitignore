@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# Python byte code
+*.pyc
+
+# qtcreator generated files
+*.pro.user*
+CMakeLists.txt.user
