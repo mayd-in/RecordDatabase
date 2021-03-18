@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QKeySequence
 
 from .recordmanager import RecordManager
-from .dialogs import NewRecordDialog
+from .dialogs import NewRecordDialog, OpenRecordDialog
 
 
 class MainWindow(QMainWindow):
@@ -19,10 +19,14 @@ class MainWindow(QMainWindow):
         dialogNewRecord = NewRecordDialog(self)
         dialogNewRecord.recordCreated.connect(self.recordNew)
 
+        dialogOpenRecord = OpenRecordDialog(self)
+        dialogOpenRecord.recordSelected.connect(self.recordOpen)
+
         # PROPERTIES
         self.textEditor = textEditor
         self.recordManager = recordManager
         self.dialogNewRecord = dialogNewRecord
+        self.dialogOpenRecord = dialogOpenRecord
 
         # SETUP
         self.setupMenus()
@@ -40,7 +44,17 @@ class MainWindow(QMainWindow):
         newRecordAction.setShortcut(QKeySequence(QKeySequence.New))
         newRecordAction.triggered.connect(self.dialogNewRecord.open)
 
+        openRecordAction = QAction(self.tr("&Open Record"), self)
+        openRecordAction.setShortcut(QKeySequence(QKeySequence.Open))
+        openRecordAction.triggered.connect(self.dialogOpenRecord.open)
+
+        saveRecordAction = QAction(self.tr("&Save Record"), self)
+        saveRecordAction.setShortcut(QKeySequence(QKeySequence.Save))
+        saveRecordAction.triggered.connect(self.recordSave)
+
         fileMenu.addAction(newRecordAction)
+        fileMenu.addAction(openRecordAction)
+        fileMenu.addAction(saveRecordAction)
 
         # HELP MENU
         helpMenu.addAction(self.tr("&Help"), lambda: QMessageBox.about(self, QApplication.applicationDisplayName(),
@@ -49,8 +63,43 @@ class MainWindow(QMainWindow):
         helpMenu.addAction(self.tr("About Qt"), QApplication.aboutQt)
 
     def recordNew(self, recordId, name, surname):
-        self.recordManager.create(recordId, name, surname)
-        self.dialogNewRecord.accept()
+        error = self.recordManager.create(recordId, name, surname)
+        if not error:
+            self.dialogNewRecord.accept()
+        elif error == RecordManager.ErrorCodes.RecordExists:
+            QMessageBox.warning(self, QApplication.applicationDisplayName(),
+                self.tr("Record exists already"))
+        else:
+            QMessageBox.critical(self, QApplication.applicationDisplayName(),
+                self.tr("Unknown error occurred"))
+
+    def recordOpen(self, recordId):
+        error = self.recordManager.open(recordId)
+        if not error:
+            return
+        elif error == RecordManager.ErrorCodes.RecordNotExist:
+            QMessageBox.warning(self, QApplication.applicationDisplayName(),
+                self.tr("Record not found"))
+        elif error == RecordManager.ErrorCodes.FileOpenFailed:
+            QMessageBox.warning(self, QApplication.applicationDisplayName(),
+                self.tr("Unable to open file"))
+        else:
+            QMessageBox.critical(self, QApplication.applicationDisplayName(),
+                self.tr("Unknown error occurred"))
+
+    def recordSave(self):
+        error = self.recordManager.save()
+        if not error:
+            return True
+        elif error == RecordManager.ErrorCodes.NoCurrentRecord:
+            return True
+        elif error == RecordManager.ErrorCodes.FileSaveFailed:
+            QMessageBox.warning(self, QApplication.applicationDisplayName(),
+                self.tr("Unable to save file"))
+        else:
+            QMessageBox.critical(self, QApplication.applicationDisplayName(),
+                self.tr("Unknown error occurred"))
+        return False
 
     def updateWindowProperties(self):
         currentRecord = self.recordManager.currentRecord

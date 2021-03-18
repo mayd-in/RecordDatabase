@@ -66,3 +66,37 @@ class NewRecordDialog(QDialog):
         self.surnameLineEdit.clear()
 
         super().open()
+
+
+class OpenRecordDialog(QDialog):
+    recordSelected = pyqtSignal(str)
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        # DIALOG DEFINITION
+        idLabel = QLabel(self.tr("Record ID:"))
+        idLineEdit = QLineEdit()
+        idLineEdit.setValidator(validatorId)
+
+        openButton = QPushButton(self.tr("Open"))
+
+        formLayout = QFormLayout()
+        formLayout.addRow(idLabel, idLineEdit)
+
+        layout = QVBoxLayout()
+        layout.addLayout(formLayout)
+        layout.addWidget(openButton)
+
+        self.setLayout(layout)
+
+        # CONNECTIONS
+        openButton.clicked.connect(lambda: self.recordSelected.emit(idLineEdit.text()))
+
+        # PROPERTIES
+        self.idLineEdit = idLineEdit
+
+    def open(self):
+        self.idLineEdit.clear()
+
+        super().open()
