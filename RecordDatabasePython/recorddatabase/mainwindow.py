@@ -11,6 +11,7 @@ class MainWindow(QMainWindow):
         super().__init__()
 
         textEditor = QTextEdit()
+        textEditor.document().modificationChanged.connect(self.setWindowModified)
         self.setCentralWidget(textEditor)
 
         recordManager = RecordManager(textEditor.document(), self)
@@ -63,6 +64,9 @@ class MainWindow(QMainWindow):
         helpMenu.addAction(self.tr("About Qt"), QApplication.aboutQt)
 
     def recordNew(self, recordId, name, surname):
+        if not self.maybeSave():
+            return
+
         error = self.recordManager.create(recordId, name, surname)
         if not error:
             self.dialogNewRecord.accept()
@@ -74,6 +78,9 @@ class MainWindow(QMainWindow):
                 self.tr("Unknown error occurred"))
 
     def recordOpen(self, recordId):
+        if not self.maybeSave():
+            return
+
         error = self.recordManager.open(recordId)
         if not error:
             return
@@ -100,6 +107,27 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, QApplication.applicationDisplayName(),
                 self.tr("Unknown error occurred"))
         return False
+
+    def maybeSave(self):
+        if not self.textEditor.document().isModified():
+            return True
+
+        ret = QMessageBox.warning(self, QApplication.applicationDisplayName(),
+            self.tr("There are unsaved changes.\nDo you want to save your changes?"),
+            QMessageBox.Save | QMessageBox.Discard | QMessageBox.Cancel
+        )
+
+        if ret == QMessageBox.Save:
+            return self.recordSave()
+        elif ret == QMessageBox.Cancel:
+            return False
+        return True
+
+    def closeEvent(self, event):
+        if self.maybeSave():
+            event.accept()
+        else:
+            event.ignore()
 
     def updateWindowProperties(self):
         currentRecord = self.recordManager.currentRecord
