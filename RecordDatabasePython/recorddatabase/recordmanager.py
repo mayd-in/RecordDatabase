@@ -5,6 +5,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QTextDocument, QTextDocumentWriter
 from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 
+from .recordmodel import RecordModel
+
 
 class Record():
     def __init__(self, recordId, fileName, isSaved):
@@ -33,6 +35,7 @@ class RecordManager(QObject):
         self.textDocument = textDocument
 
         self.currentRecord = None
+        self.recordModel = RecordModel(self)
 
         # FILE DIRECTORY PATH
         writeDir = QDir(QStandardPaths.writableLocation(QStandardPaths.AppDataLocation))

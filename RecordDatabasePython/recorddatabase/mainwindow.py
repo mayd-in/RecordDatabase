@@ -20,7 +20,7 @@ class MainWindow(QMainWindow):
         dialogNewRecord = NewRecordDialog(self)
         dialogNewRecord.recordCreated.connect(self.recordNew)
 
-        dialogOpenRecord = OpenRecordDialog(self)
+        dialogOpenRecord = OpenRecordDialog(recordManager.recordModel, self)
         dialogOpenRecord.recordSelected.connect(self.recordOpen)
 
         # PROPERTIES
