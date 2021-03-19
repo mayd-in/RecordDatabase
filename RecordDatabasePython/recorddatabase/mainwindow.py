@@ -1,12 +1,17 @@
+import enum
+
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QKeySequence
+from PyQt5.QtGui import QKeySequence, QColor, QPalette
 
 from .recordmanager import RecordManager
 from .dialogs import NewRecordDialog, OpenRecordDialog
 
 
 class MainWindow(QMainWindow):
+    Theme = enum.Enum('Theme', 'Light Dark')
+    themeChanged = pyqtSignal(Theme)
+
     def __init__(self):
         super().__init__()
 
@@ -33,6 +38,7 @@ class MainWindow(QMainWindow):
         self.setupMenus()
 
         self.updateWindowProperties()
+        self.setTheme(MainWindow.Theme.Dark)
 
     def setupMenus(self):
         fileMenu = QMenu(self.tr("&File"), self)
@@ -41,6 +47,25 @@ class MainWindow(QMainWindow):
         self.menuBar().addMenu(helpMenu)
 
         # FILE MENU
+        # Theme
+        actionThemeLight = QAction(self.tr("Light"), self)
+        actionThemeLight.setCheckable(True)
+        actionThemeLight.triggered.connect(lambda: self.setTheme(MainWindow.Theme.Light))
+        self.themeChanged.connect(lambda theme: actionThemeLight.setChecked(theme == MainWindow.Theme.Light))
+
+        actionThemeDark = QAction(self.tr("Dark"), self)
+        actionThemeDark.setCheckable(True)
+        actionThemeDark.triggered.connect(lambda: self.setTheme(MainWindow.Theme.Dark))
+        self.themeChanged.connect(lambda theme: actionThemeDark.setChecked(theme == MainWindow.Theme.Dark))
+
+        themeGroup = QActionGroup(self)
+        themeGroup.addAction(actionThemeLight)
+        themeGroup.addAction(actionThemeDark)
+
+        themeMenu = QMenu(self.tr("&Theme"), self)
+        themeMenu.addActions(themeGroup.actions())
+
+        # Records
         newRecordAction = QAction(self.tr("&New Record"), self)
         newRecordAction.setShortcut(QKeySequence(QKeySequence.New))
         newRecordAction.triggered.connect(self.dialogNewRecord.open)
@@ -53,6 +78,8 @@ class MainWindow(QMainWindow):
         saveRecordAction.setShortcut(QKeySequence(QKeySequence.Save))
         saveRecordAction.triggered.connect(self.recordSave)
 
+        fileMenu.addMenu(themeMenu)
+        fileMenu.addSeparator()
         fileMenu.addAction(newRecordAction)
         fileMenu.addAction(openRecordAction)
         fileMenu.addAction(saveRecordAction)
@@ -137,3 +164,37 @@ class MainWindow(QMainWindow):
         else:
             self.textEditor.setEnabled(False)
             self.setWindowTitle("[*]" + QApplication.applicationDisplayName())
+
+    def setTheme(self, theme):
+        if theme == MainWindow.Theme.Light:
+            defaultPalette = QPalette()
+            self.setPalette(defaultPalette)  # Editor palette
+            QApplication.setPalette(defaultPalette)
+            self.themeChanged.emit(MainWindow.Theme.Light)
+
+        elif theme == MainWindow.Theme.Dark:
+            windowColor = QColor(53,53,53)
+
+            # Editor color palette
+            editorPalette = self.palette()
+            editorPalette.setColor(QPalette.Base, Qt.lightGray)
+            editorPalette.setColor(QPalette.Text, Qt.black)  # Otherwise editor text becomes white
+            self.setPalette(editorPalette)
+
+            # Application color palette
+            palette = QApplication.palette()
+            palette.setColor(QPalette.Window, windowColor)
+            palette.setColor(QPalette.WindowText, Qt.white)
+            palette.setColor(QPalette.Base, windowColor.darker(150))
+            palette.setColor(QPalette.AlternateBase, windowColor)
+            palette.setColor(QPalette.ToolTipBase, windowColor)
+            palette.setColor(QPalette.ToolTipText, Qt.white)
+            palette.setColor(QPalette.Text, Qt.white)
+            palette.setColor(QPalette.Button, windowColor)
+            palette.setColor(QPalette.ButtonText, Qt.white)
+            palette.setColor(QPalette.BrightText, Qt.red)
+            palette.setColor(QPalette.HighlightedText, Qt.black)
+            palette.setColor(QPalette.Disabled, QPalette.Text, Qt.darkGray)
+            palette.setColor(QPalette.Disabled, QPalette.ButtonText, Qt.darkGray)
+            QApplication.setPalette(palette)
+            self.themeChanged.emit(MainWindow.Theme.Dark)
