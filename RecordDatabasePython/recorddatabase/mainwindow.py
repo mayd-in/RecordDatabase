@@ -2,8 +2,9 @@ import enum
 
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QKeySequence, QColor, QPalette
+from PyQt5.QtGui import QFontDatabase, QFontInfo, QKeySequence, QColor, QPalette
 
+from .texteditor import TextEditor
 from .recordmanager import RecordManager
 from .dialogs import NewRecordDialog, OpenRecordDialog
 
@@ -15,7 +16,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        textEditor = QTextEdit()
+        textEditor = TextEditor(self)
         textEditor.document().modificationChanged.connect(self.setWindowModified)
         self.setCentralWidget(textEditor)
 
@@ -36,6 +37,7 @@ class MainWindow(QMainWindow):
 
         # SETUP
         self.setupMenus()
+        self.setupToolbars()
 
         self.updateWindowProperties()
         self.setTheme(MainWindow.Theme.Dark)
@@ -89,6 +91,60 @@ class MainWindow(QMainWindow):
                     self.tr("<p><b>Record Database Editor</b> allows storing "
                        "per contact information in files using a database.</p>")))
         helpMenu.addAction(self.tr("About Qt"), QApplication.aboutQt)
+
+    def setupToolbars(self):
+        # FONT
+        toolbar = self.addToolBar(self.tr("Font"))
+        toolbar.setAllowedAreas(Qt.ToolBarArea.TopToolBarArea | Qt.ToolBarArea.BottomToolBarArea)
+
+        comboFontFamily = QFontComboBox()
+        comboFontFamily.textActivated.connect(self.textEditor.setFontFamily)
+
+        comboFontSize = QComboBox()
+        comboFontSize.setEditable(True)
+        sizes = QFontDatabase.standardSizes()
+        for size in sizes:
+            comboFontSize.addItem(str(size))
+        comboFontSize.setCurrentIndex(sizes.index(QApplication.font().pointSize()))
+        comboFontSize.textActivated.connect(self.textEditor.setFontSize)
+
+        def onChanged(format):
+            font = format.font()
+            comboFontFamily.setCurrentIndex(comboFontFamily.findText(QFontInfo(font).family()))
+            comboFontSize.setCurrentIndex(comboFontSize.findText(str(font.pointSize())))
+        self.textEditor.currentCharFormatChanged.connect(onChanged)
+
+        toolbar.addWidget(comboFontFamily)
+        toolbar.addWidget(comboFontSize)
+        toolbar.addAction(self.textEditor.actionFontSizeIncrease)
+        toolbar.addAction(self.textEditor.actionFontSizeDecrease)
+
+        # FORMAT
+        toolbar = self.addToolBar(self.tr("Format"))
+        toolbar.addAction(self.textEditor.actionTextBold)
+        toolbar.addAction(self.textEditor.actionTextItalic)
+        toolbar.addAction(self.textEditor.actionTextUnderline)
+
+        toolbar.addSeparator()
+        toolbar.addAction(self.textEditor.actionFontColor)
+
+        toolbar.addSeparator()
+        alignGroup = QActionGroup(self)
+        if (QApplication.isLeftToRight()):
+            alignGroup.addAction(self.textEditor.actionAlignLeft)
+            alignGroup.addAction(self.textEditor.actionAlignCenter)
+            alignGroup.addAction(self.textEditor.actionAlignRight)
+        else:
+            alignGroup.addAction(self.textEditor.actionAlignRight)
+            alignGroup.addAction(self.textEditor.actionAlignCenter)
+            alignGroup.addAction(self.textEditor.actionAlignLeft)
+        alignGroup.addAction(self.textEditor.actionAlignJustify)
+        toolbar.addActions(alignGroup.actions())
+
+        toolbar.addSeparator()
+        toolbar.addAction(self.textEditor.actionIndentMore)
+        toolbar.addAction(self.textEditor.actionIndentLess)
+
 
     def recordNew(self, recordId, name, surname):
         if not self.maybeSave():
