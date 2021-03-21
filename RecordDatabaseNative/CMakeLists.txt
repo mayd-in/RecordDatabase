@@ -16,11 +16,15 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets LinguistTools REQUIRED)
 
 set(INCLUDE_FILES
     include/mainwindow.h
+    include/dialogs.h
+    include/recordmanager.h
 )
 
 set(SOURCE_FILES
     src/main.cpp
     lib/mainwindow.cpp
+    lib/dialogs.cpp
+    lib/recordmanager.cpp
 )
 
 set(PROJECT_SOURCES
