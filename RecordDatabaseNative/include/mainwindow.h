@@ -3,8 +3,7 @@
 
 #include <QMainWindow>
 
-class TextEditor;
-class RecordManager;
+class QTextEdit;
 
 class MainWindow : public QMainWindow
 {
@@ -12,5 +11,10 @@ class MainWindow : public QMainWindow
 
 public:
     MainWindow(QWidget *parent = nullptr);
+
+private:
+    void setupMenus();
+
+    QTextEdit* m_textEditor;
 };
 #endif // MAINWINDOW_H
