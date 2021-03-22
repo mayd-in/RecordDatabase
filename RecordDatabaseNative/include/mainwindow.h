@@ -22,6 +22,9 @@ private:
     void recordNew(QString recordId, QString name, QString surname);
     void recordOpen(QString recordId);
     bool recordSave();
+    bool maybeSave();
+
+    void closeEvent(QCloseEvent *event) override;
 
     void updateWindowProperties();
 

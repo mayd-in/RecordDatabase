@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     m_textEditor = new QTextEdit(this);
     setCentralWidget(m_textEditor);
+    connect(m_textEditor->document(), &QTextDocument::modificationChanged, this, &QMainWindow::setWindowModified);
 
     m_recordManager = new RecordManager(m_textEditor->document(), this);
     connect(m_recordManager, &RecordManager::currentRecordChanged, this, &MainWindow::updateWindowProperties);
@@ -60,6 +61,9 @@ void MainWindow::setupMenus()
 
 void MainWindow::recordNew(QString recordId, QString name, QString surname)
 {
+    if (!maybeSave())
+        return;
+
     auto error = m_recordManager->create(recordId, name, surname);
 
     switch (error) {
@@ -76,6 +80,9 @@ void MainWindow::recordNew(QString recordId, QString name, QString surname)
 
 void MainWindow::recordOpen(QString recordId)
 {
+    if (!maybeSave())
+        return;
+
     auto error = m_recordManager->open(recordId);
 
     switch (error) {
@@ -107,6 +114,30 @@ bool MainWindow::recordSave()
         QMessageBox::critical(this, QApplication::applicationDisplayName(), tr("Unknown error occurred"));
     }
     return false;
+}
+
+bool MainWindow::maybeSave()
+{
+    if(!m_textEditor->document()->isModified())
+        return true;
+
+    auto ret = QMessageBox::warning(this, QApplication::applicationDisplayName(),
+                             tr("There are unsaved changes.\n"
+                                "Do you want to save your changes?"),
+                             QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
+    if (ret == QMessageBox::Save)
+        return recordSave();
+    else if (ret == QMessageBox::Cancel)
+        return false;
+    return true;
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    if (maybeSave())
+        event->accept();
+    else
+        event->ignore();
 }
 
 void MainWindow::updateWindowProperties()
