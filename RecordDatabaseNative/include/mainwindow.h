@@ -13,8 +13,17 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+    enum Theme {
+        Default,
+        Light,
+        Dark,
+    };
+
 public:
     MainWindow(QWidget *parent = nullptr);
+
+signals:
+    void themeChanged(Theme theme);
 
 private:
     void setupMenus();
@@ -27,6 +36,7 @@ private:
     void closeEvent(QCloseEvent *event) override;
 
     void updateWindowProperties();
+    void setTheme(Theme theme);
 
     QTextEdit* m_textEditor;
     RecordManager* m_recordManager;

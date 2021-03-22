@@ -24,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupMenus();
 
     updateWindowProperties();
+    setTheme(Theme::Dark);
 }
 
 void MainWindow::setupMenus()
@@ -34,6 +35,25 @@ void MainWindow::setupMenus()
     menuBar()->addMenu(helpMenu);
 
     // FILE MENU
+    // Theme
+    auto lightThemeAction = new QAction(tr("Light"), this);
+    lightThemeAction->setCheckable(true);
+    connect(lightThemeAction, &QAction::triggered, this, [this](){setTheme(Theme::Light);});
+
+    auto darkThemeAction = new QAction(tr("Dark"), this);
+    darkThemeAction->setCheckable(true);
+    connect(darkThemeAction, &QAction::triggered, this, [this](){setTheme(Theme::Dark);});
+
+    connect(this, &MainWindow::themeChanged, lightThemeAction, [lightThemeAction, darkThemeAction](Theme theme){
+        lightThemeAction->setChecked(theme == Theme::Light);
+        darkThemeAction->setChecked(theme == Theme::Dark);
+    });
+
+    auto themeMenu = new QMenu(tr("&Theme"), this);
+    themeMenu->addAction(lightThemeAction);
+    themeMenu->addAction(darkThemeAction);
+
+    // Records
     auto newRecordAction = new QAction(tr("&New Record"), this);
     newRecordAction->setShortcut(QKeySequence(QKeySequence::New));
     connect(newRecordAction, &QAction::triggered, m_newRecordDialog, &NewRecordDialog::open);
@@ -46,6 +66,8 @@ void MainWindow::setupMenus()
     saveRecordAction->setShortcut(QKeySequence(QKeySequence::Save));
     connect(saveRecordAction, &QAction::triggered, this, &MainWindow::recordSave);
 
+    fileMenu->addMenu(themeMenu);
+    fileMenu->addSeparator();
     fileMenu->addAction(newRecordAction);
     fileMenu->addAction(openRecordAction);
     fileMenu->addAction(saveRecordAction);
@@ -151,5 +173,44 @@ void MainWindow::updateWindowProperties()
     else {
         m_textEditor->setEnabled(false);
         setWindowTitle(QString("[*]%1").arg(QApplication::applicationDisplayName()));
+    }
+}
+
+void MainWindow::setTheme(MainWindow::Theme theme)
+{
+    if (theme == Theme::Default || theme == Theme::Light) {
+        QPalette defaultPalette;
+        setPalette(defaultPalette);  // Editor palette
+        QApplication::setPalette(defaultPalette);  // Application palette
+
+        themeChanged(Theme::Light);
+    }
+    else if (theme == Theme::Dark) {
+        QColor windowColor(53,53,53);
+
+        // Editor color palette
+        QPalette editorPalette = this->palette();
+        editorPalette.setColor(QPalette::Base, Qt::lightGray);
+        editorPalette.setColor(QPalette::Text, Qt::black);  // Otherwise editor text becomes white
+        setPalette(editorPalette);
+
+        // Application color palette
+        QPalette palette = QApplication::palette();
+        palette.setColor(QPalette::Window, windowColor);
+        palette.setColor(QPalette::WindowText, Qt::white);
+        palette.setColor(QPalette::Base, windowColor.darker(150));
+        palette.setColor(QPalette::AlternateBase, windowColor);
+        palette.setColor(QPalette::ToolTipBase, windowColor);
+        palette.setColor(QPalette::ToolTipText, Qt::white);
+        palette.setColor(QPalette::Text, Qt::white);
+        palette.setColor(QPalette::Button, windowColor);
+        palette.setColor(QPalette::ButtonText, Qt::white);
+        palette.setColor(QPalette::BrightText, Qt::red);
+        palette.setColor(QPalette::HighlightedText, Qt::black);
+        palette.setColor(QPalette::Disabled, QPalette::Text, Qt::darkGray);
+        palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
+        QApplication::setPalette(palette);
+
+        themeChanged(Theme::Dark);
     }
 }
