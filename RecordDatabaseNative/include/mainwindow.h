@@ -3,7 +3,7 @@
 
 #include <QMainWindow>
 
-class QTextEdit;
+class TextEditor;
 
 class RecordManager;
 class NewRecordDialog;
@@ -27,6 +27,7 @@ signals:
 
 private:
     void setupMenus();
+    void setupToolBars();
 
     void recordNew(QString recordId, QString name, QString surname);
     void recordOpen(QString recordId);
@@ -38,7 +39,7 @@ private:
     void updateWindowProperties();
     void setTheme(Theme theme);
 
-    QTextEdit* m_textEditor;
+    TextEditor* m_textEditor;
     RecordManager* m_recordManager;
 
     NewRecordDialog* m_newRecordDialog;

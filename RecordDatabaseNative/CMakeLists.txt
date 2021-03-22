@@ -18,6 +18,7 @@ set(INCLUDE_FILES
     include/mainwindow.h
     include/dialogs.h
     include/recordmanager.h
+    include/texteditor.h
 )
 
 set(SOURCE_FILES
@@ -25,6 +26,7 @@ set(SOURCE_FILES
     lib/mainwindow.cpp
     lib/dialogs.cpp
     lib/recordmanager.cpp
+    lib/texteditor.cpp
 )
 
 set(PROJECT_SOURCES

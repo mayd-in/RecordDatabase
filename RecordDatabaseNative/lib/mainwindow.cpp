@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "dialogs.h"
 #include "recordmanager.h"
+#include "texteditor.h"
 
 #include <QtCore>
 #include <QtWidgets>
@@ -8,7 +9,7 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
-    m_textEditor = new QTextEdit(this);
+    m_textEditor = new TextEditor(this);
     setCentralWidget(m_textEditor);
     connect(m_textEditor->document(), &QTextDocument::modificationChanged, this, &QMainWindow::setWindowModified);
 
@@ -22,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_openRecordDialog, &OpenRecordDialog::recordSelected, this, &MainWindow::recordOpen);
 
     setupMenus();
+    setupToolBars();
 
     updateWindowProperties();
     setTheme(Theme::Dark);
@@ -79,6 +81,71 @@ void MainWindow::setupMenus()
                               "per contact information in files using a database.</p>"));
     });
     helpMenu->addAction(tr("About Qt"), qApp, &QApplication::aboutQt);
+}
+
+void MainWindow::setupToolBars()
+{
+    // FONT
+    {
+        auto toolBar = addToolBar(tr("Font"));
+        toolBar->setAllowedAreas(Qt::TopToolBarArea | Qt::BottomToolBarArea);
+
+        auto comboFontFamily = new QFontComboBox();
+        connect(comboFontFamily, &QFontComboBox::textActivated, m_textEditor, &TextEditor::setFontFamily);
+
+        auto comboFontSize = new QComboBox();
+        comboFontSize->setEditable(true);
+        auto sizes = QFontDatabase::standardSizes();
+        for (auto size : sizes) {
+            comboFontSize->addItem(QString::number(size));
+        }
+        comboFontSize->setCurrentIndex(sizes.indexOf(QApplication::font().pointSize()));
+        connect(comboFontSize, &QFontComboBox::textActivated, m_textEditor, [this](QString text) {
+            m_textEditor->setFontSize(text.toInt());
+        });
+
+        connect(m_textEditor, &QTextEdit::currentCharFormatChanged, this,
+            [comboFontFamily, comboFontSize](QTextCharFormat format) {
+                auto font = format.font();
+                comboFontFamily->setCurrentIndex(comboFontFamily->findText(QFontInfo(font).family()));
+                comboFontSize->setCurrentIndex(comboFontSize->findText(QString::number(font.pointSize())));
+        });
+
+        toolBar->addWidget(comboFontFamily);
+        toolBar->addWidget(comboFontSize);
+        toolBar->addAction(m_textEditor->actionFontSizeIncrease);
+        toolBar->addAction(m_textEditor->actionFontSizeDecrease);
+    }
+
+    // FORMAT
+    {
+        auto toolBar = addToolBar(tr("Format"));
+        toolBar->addAction(m_textEditor->actionTextBold);
+        toolBar->addAction(m_textEditor->actionTextItalic);
+        toolBar->addAction(m_textEditor->actionTextUnderline);
+
+        toolBar->addSeparator();
+        toolBar->addAction(m_textEditor->actionFontColor);
+
+        toolBar->addSeparator();
+        auto *alignGroup = new QActionGroup(this);
+        if (QApplication::isLeftToRight()) {
+            alignGroup->addAction(m_textEditor->actionAlignLeft);
+            alignGroup->addAction(m_textEditor->actionAlignCenter);
+            alignGroup->addAction(m_textEditor->actionAlignRight);
+        }
+        else {
+            alignGroup->addAction(m_textEditor->actionAlignRight);
+            alignGroup->addAction(m_textEditor->actionAlignCenter);
+            alignGroup->addAction(m_textEditor->actionAlignLeft);
+        }
+        alignGroup->addAction(m_textEditor->actionAlignJustify);
+        toolBar->addActions(alignGroup->actions());
+
+        toolBar->addSeparator();
+        toolBar->addAction(m_textEditor->actionIndentMore);
+        toolBar->addAction(m_textEditor->actionIndentLess);
+    }
 }
 
 void MainWindow::recordNew(QString recordId, QString name, QString surname)
