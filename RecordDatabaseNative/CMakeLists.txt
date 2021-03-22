@@ -11,8 +11,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets LinguistTools REQUIRED)
-find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets LinguistTools REQUIRED)
+find_package(QT NAMES Qt6 Qt5 COMPONENTS Widgets Sql LinguistTools REQUIRED)
+find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Widgets Sql LinguistTools REQUIRED)
 
 set(INCLUDE_FILES
     include/mainwindow.h
@@ -46,4 +46,4 @@ target_include_directories(RecordDatabaseNative PRIVATE
     include
 )
 
-target_link_libraries(RecordDatabaseNative PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(RecordDatabaseNative PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql)
