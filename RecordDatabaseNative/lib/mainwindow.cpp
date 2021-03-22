@@ -17,6 +17,9 @@ MainWindow::MainWindow(QWidget *parent)
     m_newRecordDialog = new NewRecordDialog(this);
     connect(m_newRecordDialog, &NewRecordDialog::recordCreated, this, &MainWindow::recordNew);
 
+    m_openRecordDialog = new OpenRecordDialog(this);
+    connect(m_openRecordDialog, &OpenRecordDialog::recordSelected, this, &MainWindow::recordOpen);
+
     setupMenus();
 
     updateWindowProperties();
@@ -34,7 +37,17 @@ void MainWindow::setupMenus()
     newRecordAction->setShortcut(QKeySequence(QKeySequence::New));
     connect(newRecordAction, &QAction::triggered, m_newRecordDialog, &NewRecordDialog::open);
 
+    auto openRecordAction = new QAction(tr("&Open Record"), this);
+    openRecordAction->setShortcut(QKeySequence(QKeySequence::Open));
+    connect(openRecordAction, &QAction::triggered, m_openRecordDialog, &OpenRecordDialog::open);
+
+    auto saveRecordAction = new QAction(tr("&Save Record"), this);
+    saveRecordAction->setShortcut(QKeySequence(QKeySequence::Save));
+    connect(saveRecordAction, &QAction::triggered, this, &MainWindow::recordSave);
+
     fileMenu->addAction(newRecordAction);
+    fileMenu->addAction(openRecordAction);
+    fileMenu->addAction(saveRecordAction);
 
     // HELP MENU
     helpMenu->addAction(tr("&About"), this, [&]() {
@@ -45,10 +58,55 @@ void MainWindow::setupMenus()
     helpMenu->addAction(tr("About Qt"), qApp, &QApplication::aboutQt);
 }
 
-void MainWindow::recordNew(QString recordId, QString name, QString surname) const
+void MainWindow::recordNew(QString recordId, QString name, QString surname)
 {
-    m_recordManager->create(recordId, name, surname);
-    m_newRecordDialog->accept();
+    auto error = m_recordManager->create(recordId, name, surname);
+
+    switch (error) {
+    case RecordManager::NoError:
+        m_newRecordDialog->accept();
+        break;
+    case RecordManager::RecordExists:
+        QMessageBox::warning(this, QApplication::applicationDisplayName(), tr("Record exists already"));
+        break;
+    default:
+        QMessageBox::critical(this, QApplication::applicationDisplayName(), tr("Unknown error occurred"));
+    }
+}
+
+void MainWindow::recordOpen(QString recordId)
+{
+    auto error = m_recordManager->open(recordId);
+
+    switch (error) {
+    case RecordManager::NoError:
+        break;
+    case RecordManager::RecordNotExist:
+        QMessageBox::warning(this, QApplication::applicationDisplayName(), tr("Record not found"));
+        break;
+    case RecordManager::FileOpenFailed:
+        QMessageBox::warning(this, QApplication::applicationDisplayName(), tr("Unable to open file"));
+        break;
+    default:
+        QMessageBox::critical(this, QApplication::applicationDisplayName(), tr("Unknown error occurred"));
+    }
+}
+
+bool MainWindow::recordSave()
+{
+    auto error = m_recordManager->save();
+    switch (error) {
+    case RecordManager::NoError:
+        return true;
+    case RecordManager::NoCurrentRecord:
+        return true;
+    case RecordManager::FileSaveFailed:
+        QMessageBox::warning(this, QApplication::applicationDisplayName(), tr("Unable to save file"));
+        break;
+    default:
+        QMessageBox::critical(this, QApplication::applicationDisplayName(), tr("Unknown error occurred"));
+    }
+    return false;
 }
 
 void MainWindow::updateWindowProperties()

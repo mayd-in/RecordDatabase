@@ -66,3 +66,38 @@ void NewRecordDialog::beforeAccept()
 
     emit recordCreated(recordId, name, surname);
 }
+
+OpenRecordDialog::OpenRecordDialog(QWidget* parent) : QDialog(parent)
+{
+    auto idLabel = new QLabel(tr("Record ID:"));
+    m_idLineEdit = new QLineEdit;
+    m_idLineEdit->setValidator(&validatorId);
+
+    auto formLayout = new QFormLayout;
+    formLayout->addRow(idLabel, m_idLineEdit);
+
+    auto openRecordButton = new QPushButton(tr("Open"));
+    openRecordButton->setEnabled(false);
+
+    auto layout = new QVBoxLayout();
+    layout->addLayout(formLayout);
+    layout->addWidget(openRecordButton);
+
+    setLayout(layout);
+
+    // CONNECTIONS
+    connect(m_idLineEdit, &QLineEdit::textChanged, this, [this, openRecordButton](){
+        openRecordButton->setEnabled(m_idLineEdit->hasAcceptableInput());
+    });
+
+    connect(openRecordButton, &QPushButton::clicked, this, [this](){
+        emit recordSelected(m_idLineEdit->text());
+    });
+}
+
+void OpenRecordDialog::open()
+{
+    m_idLineEdit->clear();
+
+    QDialog::open();
+}
