@@ -15,10 +15,12 @@ find_package(QT NAMES Qt6 Qt5 COMPONENTS Core Quick LinguistTools REQUIRED)
 find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Quick LinguistTools REQUIRED)
 
 set(INCLUDE_FILES
+    src/recordmanager.h
 )
 
 set(SOURCE_FILES
     src/main.cpp
+    src/recordmanager.cpp
 )
 
 set(PROJECT_SOURCES

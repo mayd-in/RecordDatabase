@@ -1,6 +1,8 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 
+#include "recordmanager.h"
+
 int main(int argc, char *argv[])
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -11,6 +13,9 @@ int main(int argc, char *argv[])
     QGuiApplication::setOrganizationName("QtProject");
     QGuiApplication::setApplicationName("Record Database Example");
     QGuiApplication::setApplicationDisplayName(QGuiApplication::translate("app", "Record Database Editor"));
+
+    qmlRegisterType<RecordManager>("quick.recorddatabase", 1, 0, "RecordManager");
+    qmlRegisterAnonymousType<Record>("quick.recorddatabase", 1);
 
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/qml/main.qml"));

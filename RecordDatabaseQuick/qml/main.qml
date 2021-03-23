@@ -2,7 +2,10 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Window 2.15
 import QtQuick.Layouts 1.15
-import QtQuick.Dialogs 1.3 as Dialogs
+
+import quick.recorddatabase 1.0
+
+import "./Dialogs"
 
 ApplicationWindow {
     id: mainWindow
@@ -13,9 +16,28 @@ ApplicationWindow {
     visible: true
     title: Qt.application.displayName
 
+    Item {
+        id: actions
+
+        Action {
+            id: newRecordAction
+            text: qsTr("&New Record")
+            shortcut: StandardKey.New
+            onTriggered: newRecordDialog.open()
+        }
+    }
+
     menuBar: MenuBar {
         id: menuBar
         Layout.fillWidth: true
+
+        Menu {
+            title: qsTr("&File")
+
+            MenuItem {
+                action: newRecordAction
+            }
+        }
 
         Menu {
             title: qsTr("&Help")
@@ -23,17 +45,16 @@ ApplicationWindow {
             MenuItem {
                 text: qsTr("&About")
                 onTriggered: aboutDialog.open()
-
-                Dialogs.Dialog {
-                    id: aboutDialog
-                    standardButtons: Dialog.Close
-                    title: mainWindow.title
-                    Text {
-                        text: qsTr("<p><b>Record Database Editor</b> allows storing " +
-                                   "per contact information in files using a database.</p>")
-                    }
-                }
             }
+        }
+    }
+
+    RecordManager {
+        id: recordManager
+
+        document: textArea.textDocument
+        onCurrentRecordChanged: {
+            mainWindow.title = currentRecord.name + " " + currentRecord.surname + " - " + Qt.application.displayName
         }
     }
 
@@ -47,6 +68,7 @@ ApplicationWindow {
             textFormat: Qt.RichText
             wrapMode: TextArea.Wrap
             focus: true
+            enabled: false
             selectByMouse: true
             persistentSelection: true
 
@@ -55,5 +77,17 @@ ApplicationWindow {
         }
 
         ScrollBar.vertical: ScrollBar {}
+    }
+
+    AboutDialog {
+        id: aboutDialog
+    }
+
+    NewRecordDialog {
+        id: newRecordDialog
+
+        onAccepted: {
+            recordManager.create(recordId.toUpperCase(), name.toUpperCase(), surname.toUpperCase())
+        }
     }
 }
