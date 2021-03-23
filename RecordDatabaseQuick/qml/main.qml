@@ -25,6 +25,31 @@ ApplicationWindow {
             shortcut: StandardKey.New
             onTriggered: newRecordDialog.open()
         }
+        Action {
+            id: openRecordAction
+            text: qsTr("&Open Record")
+            shortcut: StandardKey.Open
+            onTriggered: openRecordDialog.open()
+        }
+        Action {
+            id: saveRecordAction
+            text: qsTr("&Save Record")
+            shortcut: StandardKey.Save
+            onTriggered: {
+                let error = recordManager.save()
+                switch (error) {
+                case RecordManager.NoError:
+                    break
+                case RecordManager.NoCurrentRecord:
+                    break
+                case RecordManager.FileSaveFailed:
+                    errorDialog.warning(qsTr("Unable to save file"))
+                    break
+                default:
+                    errorDialog.critical(qsTr("Unknown error occurred"))
+                }
+            }
+        }
     }
 
     menuBar: MenuBar {
@@ -36,6 +61,12 @@ ApplicationWindow {
 
             MenuItem {
                 action: newRecordAction
+            }
+            MenuItem {
+                action: openRecordAction
+            }
+            MenuItem {
+                action: saveRecordAction
             }
         }
 
@@ -55,6 +86,7 @@ ApplicationWindow {
         document: textArea.textDocument
         onCurrentRecordChanged: {
             mainWindow.title = currentRecord.name + " " + currentRecord.surname + " - " + Qt.application.displayName
+            textArea.enabled = currentRecord
         }
     }
 
@@ -79,6 +111,10 @@ ApplicationWindow {
         ScrollBar.vertical: ScrollBar {}
     }
 
+    ErrorDialog {
+        id: errorDialog
+    }
+
     AboutDialog {
         id: aboutDialog
     }
@@ -86,8 +122,38 @@ ApplicationWindow {
     NewRecordDialog {
         id: newRecordDialog
 
-        onAccepted: {
-            recordManager.create(recordId.toUpperCase(), name.toUpperCase(), surname.toUpperCase())
+        onApplied: {
+            let error = recordManager.create(recordId, name.toUpperCase(), surname.toUpperCase())
+            switch (error) {
+            case RecordManager.NoError:
+                accept()
+                break
+            case RecordManager.RecordExists:
+                errorDialog.warning(qsTr("Record exists already"))
+                break
+            default:
+                errorDialog.critical(qsTr("Unknown error occurred"))
+            }
+        }
+    }
+
+    OpenRecordDialog {
+        id: openRecordDialog
+
+        onApplied: {
+            let error = recordManager.open(recordId)
+            switch (error) {
+            case RecordManager.NoError:
+                break
+            case RecordManager.RecordNotExist:
+                errorDialog.warning(qsTr("Record not found"))
+                break
+            case RecordManager.FileOpenFailed:
+                errorDialog.warning(qsTr("Unable to open file"))
+                break
+            default:
+                errorDialog.critical(qsTr("Unknown error occurred"))
+            }
         }
     }
 }
