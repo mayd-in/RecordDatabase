@@ -18,9 +18,14 @@ public:
     QString recordId;
     QString name;
     QString surname;
+    QString fileName;
+    bool isSaved;
 
     bool operator==(const Record& rhs) const {
         return recordId == rhs.recordId;
+    }
+    operator bool() const {
+        return recordId != "";
     }
 };
 
@@ -34,6 +39,16 @@ class RecordManager : public QObject
     Q_PROPERTY(Record currentRecord READ currentRecord NOTIFY currentRecordChanged)
 
 public:
+    enum Error {
+            NoError,
+            RecordExists,
+            RecordNotExist,
+            NoCurrentRecord,
+            FileOpenFailed,
+            FileSaveFailed,
+        };
+    Q_ENUM(Error)
+
     explicit RecordManager(QObject *parent = nullptr);
 
     QQuickTextDocument* document() const;
@@ -43,16 +58,23 @@ public:
     void setCurrentRecord(Record record);
 
 public slots:
-    bool create(QString recordId, QString name, QString surname);
+    Error create(QString recordId, QString name, QString surname);
+    Error open(QString recordId);
+    Error save();
 
 signals:
     void documentChanged();
     void currentRecordChanged();
 
 private:
+    void setupDatabase();
+    Record findRecord(const QString& recordId) const;
+
     QQuickTextDocument* m_document;
     QTextDocument* m_textDocument;
     Record m_currentRecord;
+
+    QString m_absolutePath;
 };
 
 #endif // RECORDMANAGER_H
