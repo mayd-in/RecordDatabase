@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 
 #include "recordmanager.h"
+#include "documenthandler.h"
 
 int main(int argc, char *argv[])
 {
@@ -14,6 +15,7 @@ int main(int argc, char *argv[])
     QGuiApplication::setApplicationName("Record Database Example");
     QGuiApplication::setApplicationDisplayName(QGuiApplication::translate("app", "Record Database Editor"));
 
+    qmlRegisterType<DocumentHandler>("quick.recorddatabase", 1, 0, "DocumentHandler");
     qmlRegisterType<RecordManager>("quick.recorddatabase", 1, 0, "RecordManager");
     qmlRegisterAnonymousType<Record>("quick.recorddatabase", 1);
 

@@ -5,5 +5,7 @@
         <file>qml/Dialogs/NewRecordDialog.qml</file>
         <file>qml/Dialogs/OpenRecordDialog.qml</file>
         <file>qml/Dialogs/ErrorDialog.qml</file>
+        <file>qml/Dialogs/ColorDialog.qml</file>
+        <file>qml/Dialogs/FontDialog.qml</file>
     </qresource>
 </RCC>
