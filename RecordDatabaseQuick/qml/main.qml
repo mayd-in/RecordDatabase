@@ -16,6 +16,37 @@ ApplicationWindow {
     visible: true
     title: Qt.application.displayName
 
+    function save() {
+        let error = recordManager.save()
+        switch (error) {
+        case RecordManager.NoError:
+            return true
+        case RecordManager.NoCurrentRecord:
+            return true
+        case RecordManager.FileSaveFailed:
+            errorDialog.warning(qsTr("Unable to save file"))
+            break
+        default:
+            errorDialog.critical(qsTr("Unknown error occurred"))
+        }
+        return false
+    }
+
+    function maybeSave(callback) {
+        if (!documentHandler.modified) {
+            callback()
+            return
+        }
+
+        maybeSaveDialog.callback = callback
+        maybeSaveDialog.open()
+    }
+
+    onClosing: {
+        close.accepted = false
+        maybeSave(Qt.quit)
+    }
+
     Item {
         id: actions
 
@@ -35,20 +66,7 @@ ApplicationWindow {
             id: saveRecordAction
             text: qsTr("&Save Record")
             shortcut: StandardKey.Save
-            onTriggered: {
-                let error = recordManager.save()
-                switch (error) {
-                case RecordManager.NoError:
-                    break
-                case RecordManager.NoCurrentRecord:
-                    break
-                case RecordManager.FileSaveFailed:
-                    errorDialog.warning(qsTr("Unable to save file"))
-                    break
-                default:
-                    errorDialog.critical(qsTr("Unknown error occurred"))
-                }
-            }
+            onTriggered: mainWindow.save()
         }
 
         Action {
@@ -351,6 +369,33 @@ ApplicationWindow {
         id: errorDialog
     }
 
+    Dialog {
+        id: maybeSaveDialog
+
+        property var callback
+
+        title: qsTr("Save Changes?")
+        standardButtons: Dialog.Save | Dialog.Discard |Dialog.Cancel
+        x: (mainWindow.width - width) / 2
+        y: (mainWindow.height - height) / 2
+
+        Text {
+            text: qsTr("There are unsaved changes.\n"+
+                       "Do you want to save your changes?")
+            width: parent.width
+            wrapMode: Text.Wrap
+        }
+
+        onAccepted: {
+            if (mainWindow.save())
+                callback()
+        }
+        onDiscarded: {
+            close()
+            callback()
+        }
+    }
+
     AboutDialog {
         id: aboutDialog
     }
@@ -380,7 +425,9 @@ ApplicationWindow {
     NewRecordDialog {
         id: newRecordDialog
 
-        onApplied: {
+        onApplied: maybeSave(createRecord)
+
+        function createRecord() {
             let error = recordManager.create(recordId, name.toUpperCase(), surname.toUpperCase())
             switch (error) {
             case RecordManager.NoError:
@@ -398,7 +445,9 @@ ApplicationWindow {
     OpenRecordDialog {
         id: openRecordDialog
 
-        onApplied: {
+        onApplied: maybeSave(openRecord)
+
+        function openRecord() {
             let error = recordManager.open(recordId)
             switch (error) {
             case RecordManager.NoError:
