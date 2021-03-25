@@ -6,6 +6,11 @@ jobs:
   include:
   - os: linux
     compiler: gcc
+    addons:
+      apt:
+        packages:
+          - mesa-common-dev
+          - libglu1-mesa-dev
 script:
 - bash travis/$TRAVIS_OS_NAME/build.sh
 notifications:
