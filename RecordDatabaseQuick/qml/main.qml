@@ -20,6 +20,18 @@ ApplicationWindow {
         y = (Screen.height - height) / 2
     }
 
+    function updateWindowProperties() {
+        let currentRecord = recordManager.currentRecord
+        if (currentRecord.recordId === "")  // Temporary
+            return
+
+        if (!documentHandler.modified)
+            mainWindow.title = currentRecord.name + " " + currentRecord.surname + " - " + Qt.application.displayName
+        else
+            mainWindow.title = currentRecord.name + " " + currentRecord.surname + "* - " + Qt.application.displayName
+        textArea.enabled = true
+    }
+
     function save() {
         let error = recordManager.save()
         switch (error) {
@@ -334,10 +346,7 @@ ApplicationWindow {
         id: recordManager
 
         document: textArea.textDocument
-        onCurrentRecordChanged: {
-            mainWindow.title = currentRecord.name + " " + currentRecord.surname + " - " + Qt.application.displayName
-            textArea.enabled = currentRecord
-        }
+        onCurrentRecordChanged: mainWindow.updateWindowProperties()
     }
 
     DocumentHandler {
@@ -346,6 +355,8 @@ ApplicationWindow {
         cursorPosition: textArea.cursorPosition
         selectionStart: textArea.selectionStart
         selectionEnd: textArea.selectionEnd
+
+        onModifiedChanged: updateWindowProperties()
     }
 
     Flickable {
@@ -379,9 +390,10 @@ ApplicationWindow {
         property var callback
 
         title: qsTr("Save Changes?")
+        focus: true
         standardButtons: Dialog.Save | Dialog.Discard |Dialog.Cancel
         x: (mainWindow.width - width) / 2
-        y: (mainWindow.height - height) / 2
+        y: (mainWindow.height - height) / 3
 
         Text {
             text: qsTr("There are unsaved changes.\n"+
