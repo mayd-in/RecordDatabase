@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/main.qml</file>
+        <file>qml/Dialogs/AboutDialog.qml</file>
+        <file>qml/Dialogs/NewRecordDialog.qml</file>
+        <file>qml/Dialogs/OpenRecordDialog.qml</file>
+        <file>qml/Dialogs/ErrorDialog.qml</file>
+        <file>qml/Dialogs/ColorDialog.qml</file>
+        <file>qml/Dialogs/FontDialog.qml</file>
+        <file>qtquickcontrols2.conf</file>
+    </qresource>
+</RCC>
