@@ -1,0 +1,11 @@
+language: cpp
+git:
+  depth: 1
+sudo: false
+dist: xenial
+jobs:
+  include:
+  - os: linux
+    compiler: gcc
+script:
+- bash travis/$TRAVIS_OS_NAME/build.sh
