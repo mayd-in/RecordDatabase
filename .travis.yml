@@ -1,7 +1,6 @@
 language: cpp
 git:
   depth: 1
-root: false
 dist: xenial
 jobs:
   include:
@@ -14,3 +13,5 @@ jobs:
           - libglu1-mesa-dev
 script:
 - bash travis/$TRAVIS_OS_NAME/build.sh
+notifications:
+  email: false
