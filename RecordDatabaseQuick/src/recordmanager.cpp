@@ -51,7 +51,6 @@ void RecordManager::setCurrentRecord(Record record)
     emit currentRecordChanged();
 }
 
-
 RecordManager::Error RecordManager::create(QString recordId, QString name, QString surname)
 {
     if (findRecord(recordId))
@@ -74,8 +73,10 @@ RecordManager::Error RecordManager::open(QString recordId)
 
     // FILE READ
     QFile file(m_absolutePath + "/" + record.fileName);
-    if (!file.open(QFile::ReadOnly))
+    if (!file.open(QFile::ReadOnly)) {
+        qCritical("File open failed: %s", qPrintable(file.errorString()));
         return Error::FileOpenFailed;
+    }
 
     auto data = file.readAll();
     auto codec = QTextCodec::codecForHtml(data);
@@ -97,8 +98,10 @@ RecordManager::Error RecordManager::save()
     // FILE WRITE
     QTextDocumentWriter writer(m_absolutePath + "/" + record.fileName);
     bool success = writer.write(m_textDocument);
-    if (!success)
+    if (!success) {
+        qCritical("File write failed");
         return Error::FileSaveFailed;
+    }
 
     // DATABASE WRITE
     QSqlQuery query;
@@ -108,24 +111,26 @@ RecordManager::Error RecordManager::save()
             "last_modified = (datetime(CURRENT_TIMESTAMP, 'localtime')) "
             "WHERE record_id = :recordId"
         );
-        query.bindValue(":recordId", record.recordId);
         query.prepare(q);
+        query.bindValue(":recordId", record.recordId);
     }
     else {
         auto q = QString(
             "INSERT INTO Records (record_id, name, surname, filename) "
             "VALUES (:recordId, :name, :surname, :fileName)"
         );
+        query.prepare(q);
         query.bindValue(":recordId", record.recordId);
         query.bindValue(":name", record.name);
         query.bindValue(":surname", record.surname);
         query.bindValue(":fileName", record.fileName);
-        query.prepare(q);
     }
 
     success = query.exec();
-    if (!success)
+    if (!success) {
+        qCritical("Cannot save record to database: %s", qPrintable(query.lastError().text()));
         return Error::FileSaveFailed;
+    }
 
     // UPDATE DOCUMENT
     m_textDocument->setModified(false);

@@ -102,6 +102,7 @@ class RecordManager(QObject):
         # FILE READ
         file = QFile(f'{self.absolutePath}/{record.fileName}')
         if not file.open(QFile.ReadOnly):
+            qCritical(f"File open failed: {file.errorString()}")
             return RecordManager.ErrorCodes.FileOpenFailed
 
         data = file.readAll()
@@ -123,6 +124,7 @@ class RecordManager(QObject):
         writer = QTextDocumentWriter(f'{self.absolutePath}/{record.fileName}')
         success = writer.write(self.textDocument)
         if not success:
+            qCritical("File write failed")
             return RecordManager.ErrorCodes.FileSaveFailed
 
         # DATABASE WRITE
@@ -141,6 +143,7 @@ class RecordManager(QObject):
 
         success = query.exec()
         if not success:
+            qCritical(f"Cannot save record to database: {query.lastError().text()}")
             return RecordManager.ErrorCodes.FileSaveFailed
 
         # UPDATE DOCUMENT
