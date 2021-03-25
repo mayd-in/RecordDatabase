@@ -6,4 +6,4 @@ export QT_PLUGIN_PATH=$PWD/qt5/plugins
 mkdir build
 cd build
 cmake ..
-cmake --build . --target all -j2
+cmake --build . --target all
