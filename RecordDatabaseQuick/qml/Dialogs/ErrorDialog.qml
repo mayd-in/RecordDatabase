@@ -15,10 +15,11 @@ Dialog {
     }
 
     title: qsTr("Error")
+    focus: true
     standardButtons: Dialog.Close
     contentWidth: 300
     x: (mainWindow.width - width) / 2
-    y: (mainWindow.height - height) / 2
+    y: (mainWindow.height - height) / 3
 
     Text {
         id: errorMessage

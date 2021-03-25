@@ -10,11 +10,14 @@ Dialog {
     property alias surname: surnameTF.text
 
     title: qsTr("New Record")
+    focus: true
+    width: 300
 
     x: (mainWindow.width - width) / 2
-    y: (mainWindow.height - height) / 2
+    y: (mainWindow.height - height) / 3
 
     GridLayout {
+        anchors.fill: parent
         columns: 2
 
         Label {
@@ -26,6 +29,7 @@ Dialog {
             validator: RegExpValidator {
                 regExp: /\d{6}/
             }
+            onAccepted: standardButton(DialogButtonBox.Apply).clicked()
         }
 
         Label {
@@ -33,7 +37,9 @@ Dialog {
         }
         TextField {
             id: nameTF
+            Layout.fillWidth: true
             font.capitalization: Font.AllUppercase
+            onAccepted: standardButton(DialogButtonBox.Apply).clicked()
         }
 
         Label {
@@ -41,7 +47,9 @@ Dialog {
         }
         TextField {
             id: surnameTF
+            Layout.fillWidth: true
             font.capitalization: Font.AllUppercase
+            onAccepted: standardButton(DialogButtonBox.Apply).clicked()
         }
     }
 
@@ -54,9 +62,11 @@ Dialog {
         }
     }
 
-    onOpened: {
+    onAboutToShow: {
         recordIdTF.clear()
         nameTF.clear()
         surnameTF.clear()
+
+        recordIdTF.focus = true
     }
 }

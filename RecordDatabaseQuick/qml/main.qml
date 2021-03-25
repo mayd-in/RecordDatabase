@@ -11,10 +11,14 @@ ApplicationWindow {
     id: mainWindow
     width: Screen.desktopAvailableWidth / 2
     height: Screen.desktopAvailableHeight / 3 * 2
-    x: Screen.width / 2 - width / 2
-    y: Screen.height / 2 - height / 2
     visible: true
     title: Qt.application.displayName
+
+    // Do not bind, breaks resizing
+    Component.onCompleted: {
+        x = (Screen.width - width) / 2
+        y = (Screen.height - height) / 2
+    }
 
     function save() {
         let error = recordManager.save()
@@ -451,6 +455,7 @@ ApplicationWindow {
             let error = recordManager.open(recordId)
             switch (error) {
             case RecordManager.NoError:
+                accept()
                 break
             case RecordManager.RecordNotExist:
                 errorDialog.warning(qsTr("Record not found"))
