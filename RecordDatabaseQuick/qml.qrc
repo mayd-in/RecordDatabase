@@ -7,5 +7,6 @@
         <file>qml/Dialogs/ErrorDialog.qml</file>
         <file>qml/Dialogs/ColorDialog.qml</file>
         <file>qml/Dialogs/FontDialog.qml</file>
+        <file>qtquickcontrols2.conf</file>
     </qresource>
 </RCC>
