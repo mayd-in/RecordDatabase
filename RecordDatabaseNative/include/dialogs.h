@@ -9,6 +9,8 @@ class NewRecordDialog : public QDialog
 {
     Q_OBJECT
 
+    friend class TestNewRecordDialog;
+
 public:
     NewRecordDialog(QWidget *parent = nullptr);
 
@@ -23,6 +25,8 @@ private:
     QLineEdit* m_idLineEdit;
     QLineEdit* m_nameLineEdit;
     QLineEdit* m_surnameLineEdit;
+
+    QPushButton* m_createRecordButton;
 };
 
 class OpenRecordDialog : public QDialog

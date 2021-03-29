@@ -44,8 +44,12 @@ else()
     )
 endif()
 
-target_include_directories(RecordDatabaseNative PRIVATE
-    include
-)
+#target_include_directories(RecordDatabaseNative PRIVATE
+#    include
+#)
+
+include_directories(include)  # Include for tests too
 
 target_link_libraries(RecordDatabaseNative PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql)
+
+add_subdirectory(test)

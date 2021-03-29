@@ -21,11 +21,11 @@ NewRecordDialog::NewRecordDialog(QWidget* parent) : QDialog(parent)
     formLayout->addRow(nameLabel, m_nameLineEdit);
     formLayout->addRow(surnameLabel, m_surnameLineEdit);
 
-    auto createRecordButton = new QPushButton(tr("Create Record"));
-    createRecordButton->setEnabled(false);
+    m_createRecordButton = new QPushButton(tr("Create Record"));
+    m_createRecordButton->setEnabled(false);
 
     auto buttonBox = new QDialogButtonBox(Qt::Horizontal);
-    buttonBox->addButton(createRecordButton, QDialogButtonBox::AcceptRole);
+    buttonBox->addButton(m_createRecordButton, QDialogButtonBox::AcceptRole);
     buttonBox->setStandardButtons(QDialogButtonBox::Cancel);
 
     auto layout = new QVBoxLayout();
@@ -35,8 +35,8 @@ NewRecordDialog::NewRecordDialog(QWidget* parent) : QDialog(parent)
     setLayout(layout);
 
     // CONNECTIONS
-    connect(m_idLineEdit, &QLineEdit::textChanged, this, [this, createRecordButton](){
-        createRecordButton->setEnabled(m_idLineEdit->hasAcceptableInput());
+    connect(m_idLineEdit, &QLineEdit::textChanged, this, [this](){
+        m_createRecordButton->setEnabled(m_idLineEdit->hasAcceptableInput());
     });
     connect(m_nameLineEdit, &QLineEdit::textChanged, this, [this](const QString& text){
         m_nameLineEdit->setText(QLocale().toUpper(text));
