@@ -9,7 +9,7 @@ validatorId = QRegExpValidator(QRegExp("^\\d{6,}$"))
 class NewRecordDialog(QDialog):
     recordCreated = pyqtSignal(str, str, str)
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         idLabel = QLabel(self.tr("Record ID:"))
@@ -52,6 +52,8 @@ class NewRecordDialog(QDialog):
         self.idLineEdit = idLineEdit
         self.nameLineEdit = nameLineEdit
         self.surnameLineEdit = surnameLineEdit
+
+        self.createRecordButton = createRecordButton
 
     def beforeAccept(self):
         recordId = self.idLineEdit.text()
