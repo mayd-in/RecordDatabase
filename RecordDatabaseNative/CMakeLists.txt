@@ -52,4 +52,4 @@ include_directories(include)  # Include for tests too
 
 target_link_libraries(RecordDatabaseNative PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql)
 
-add_subdirectory(test)
+add_subdirectory(tests)
