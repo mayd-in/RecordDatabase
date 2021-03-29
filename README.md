@@ -17,15 +17,15 @@ Simple record database manager application in 3 different implementations
 
 Record Database Editor allows storing information about contacts in individual files.
 This application has been implemented in 3 different ways. Native Qt Widgets is used with Python and C++.
-QML is used with C++ backend.
+QML is used with C++ backend. All three implementations have their own tests for demonstration.
 
-## QML and Native Interfaces:
+## QML and Native Interfaces
 
 ![Record Database QML Implementation](/docs/assets/qml.png)
 
 ![Record Database Native Implementation](/docs/assets/native.png)
 
-## Some features:
+## Some features
 
 1. Rich text editor tools
 2. Easy record creation and save
@@ -40,9 +40,9 @@ QML is used with C++ backend.
   * Other compilers might work, but are not currently tested
 * Qt 5.15.x
   * Tested with the binary distributions of Qt 5.15 on Linux
-  * Only Qt version higher than 5.15 is supported.
+  * Only Qt version higher than 5.15 is supported
   * Qt 6 might work, but are not currently tested
 
 ## License
 
-This application uses MIT License. See LICENSE file for more details
+This application is licensed under the MIT License. See LICENSE file for more details
