@@ -41,11 +41,15 @@ else()
     )
 endif()
 
-target_include_directories(RecordDatabaseQuick PRIVATE
-    include
-)
+#target_include_directories(RecordDatabaseNative PRIVATE
+#    include
+#)
+
+include_directories(include)  # Include for tests too
 
 target_compile_definitions(RecordDatabaseQuick
   PRIVATE $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:QT_QML_DEBUG>)
 target_link_libraries(RecordDatabaseQuick
   PRIVATE Qt${QT_VERSION_MAJOR}::Core Qt${QT_VERSION_MAJOR}::Quick Qt${QT_VERSION_MAJOR}::Sql)
+
+add_subdirectory(test)
