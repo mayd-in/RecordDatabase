@@ -51,12 +51,16 @@ void MainWindow::setupMenus()
         if (language.startsWith("qt"))
             continue;
         language.truncate(language.lastIndexOf('.')); // "en.qm" -> "en"
-        QString languageName = language != "en" ? QLocale(language).nativeLanguageName() : "English";
-        languageMenu->addAction(languageName, this, [this, language](){
-            setLanguage(language);
+        QLocale locale(language);
+        QString languageName = language != "en" ? locale.nativeLanguageName() : "English";
+        auto action = languageMenu->addAction(languageName, this, [this, language](){
+            QSettings settings;
+            settings.setValue("language", QLocale(language));
             QMessageBox::information(this, QApplication::applicationDisplayName(),
                                      tr("The language change will take effect after restart."));
         });
+        action->setCheckable(true);
+        action->setChecked(locale == QLocale());
     }
 
     // Theme
@@ -281,9 +285,6 @@ void MainWindow::setLanguage(QLocale locale)
     m_translatorQt.load(QString(":/translations/qm/qtbase_%1.qm").arg(language));
     QApplication::installTranslator(&m_translator);
     QApplication::installTranslator(&m_translatorQt);
-
-    QSettings settings;
-    settings.setValue("language", locale);
 }
 
 void MainWindow::setTheme(MainWindow::Theme theme)

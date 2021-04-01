@@ -21,7 +21,7 @@
     <message>
         <location filename="../lib/mainwindow.cpp" line="58"/>
         <source>The language change will take effect after restart.</source>
-        <translation type="unfinished">Dil değişikliği uygulama yeniden başlatıldıktan sonra uygulanacaktır.</translation>
+        <translation>Dil değişikliği uygulama yeniden başlatıldıktan sonra uygulanacaktır.</translation>
     </message>
     <message>
         <location filename="../lib/mainwindow.cpp" line="63"/>
