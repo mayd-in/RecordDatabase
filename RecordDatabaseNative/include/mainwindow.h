@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QTranslator>
 
 class TextEditor;
 
@@ -13,13 +14,14 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+public:
     enum Theme {
         Default,
         Light,
         Dark,
     };
+    Q_ENUM(Theme)
 
-public:
     MainWindow(QWidget *parent = nullptr);
 
 signals:
@@ -37,6 +39,7 @@ private:
     void closeEvent(QCloseEvent *event) override;
 
     void updateWindowProperties();
+    void setLanguage(QLocale locale);
     void setTheme(Theme theme);
 
     TextEditor* m_textEditor;
@@ -44,5 +47,10 @@ private:
 
     NewRecordDialog* m_newRecordDialog;
     OpenRecordDialog* m_openRecordDialog;
+
+    Theme m_theme;
+
+    QTranslator m_translator;
+    QTranslator m_translatorQt;
 };
 #endif // MAINWINDOW_H

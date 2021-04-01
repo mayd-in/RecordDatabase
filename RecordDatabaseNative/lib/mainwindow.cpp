@@ -9,6 +9,12 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    QSettings settings;
+    setLanguage(settings.value("language").toLocale());
+    setTheme(settings.value("theme", Theme::Default).value<Theme>());
+
+    QApplication::setApplicationDisplayName(QApplication::translate("app", "Record Database Editor"));
+
     m_textEditor = new TextEditor(this);
     setCentralWidget(m_textEditor);
     connect(m_textEditor->document(), &QTextDocument::modificationChanged, this, &QMainWindow::setWindowModified);
@@ -26,7 +32,6 @@ MainWindow::MainWindow(QWidget *parent)
     setupToolBars();
 
     updateWindowProperties();
-    setTheme(Theme::Dark);
 }
 
 void MainWindow::setupMenus()
@@ -37,6 +42,23 @@ void MainWindow::setupMenus()
     menuBar()->addMenu(helpMenu);
 
     // FILE MENU
+    // Language
+    auto languageMenu = new QMenu(tr("&Language"), this);
+
+    QDir dir(":/translations/qm");
+    QStringList languages = dir.entryList(QStringList("*.qm"));
+    for (auto& language : languages) {
+        if (language.startsWith("qt"))
+            continue;
+        language.truncate(language.lastIndexOf('.')); // "en.qm" -> "en"
+        QString languageName = language != "en" ? QLocale(language).nativeLanguageName() : "English";
+        languageMenu->addAction(languageName, this, [this, language](){
+            setLanguage(language);
+            QMessageBox::information(this, QApplication::applicationDisplayName(),
+                                     tr("The language change will take effect after restart."));
+        });
+    }
+
     // Theme
     auto lightThemeAction = new QAction(tr("Light"), this);
     lightThemeAction->setCheckable(true);
@@ -46,10 +68,12 @@ void MainWindow::setupMenus()
     darkThemeAction->setCheckable(true);
     connect(darkThemeAction, &QAction::triggered, this, [this](){setTheme(Theme::Dark);});
 
-    connect(this, &MainWindow::themeChanged, lightThemeAction, [lightThemeAction, darkThemeAction](Theme theme){
+    auto updateChecked = [lightThemeAction, darkThemeAction](Theme theme){
         lightThemeAction->setChecked(theme == Theme::Light);
         darkThemeAction->setChecked(theme == Theme::Dark);
-    });
+    };
+    updateChecked(m_theme);
+    connect(this, &MainWindow::themeChanged, lightThemeAction, updateChecked);
 
     auto themeMenu = new QMenu(tr("&Theme"), this);
     themeMenu->addAction(lightThemeAction);
@@ -68,6 +92,7 @@ void MainWindow::setupMenus()
     saveRecordAction->setShortcut(QKeySequence(QKeySequence::Save));
     connect(saveRecordAction, &QAction::triggered, this, &MainWindow::recordSave);
 
+    fileMenu->addMenu(languageMenu);
     fileMenu->addMenu(themeMenu);
     fileMenu->addSeparator();
     fileMenu->addAction(newRecordAction);
@@ -243,14 +268,36 @@ void MainWindow::updateWindowProperties()
     }
 }
 
+void MainWindow::setLanguage(QLocale locale)
+{
+    QLocale::setDefault(locale);
+    QString language = locale.name();  // en_US
+    language.truncate(language.lastIndexOf('_'));  // en
+
+    QApplication::removeTranslator(&m_translator);
+    QApplication::removeTranslator(&m_translatorQt);
+
+    m_translator.load(QString(":/translations/qm/%1.qm").arg(language));
+    m_translatorQt.load(QString(":/translations/qm/qtbase_%1.qm").arg(language));
+    QApplication::installTranslator(&m_translator);
+    QApplication::installTranslator(&m_translatorQt);
+
+    QSettings settings;
+    settings.setValue("language", locale);
+}
+
 void MainWindow::setTheme(MainWindow::Theme theme)
 {
+    QSettings settings;
+
     if (theme == Theme::Default || theme == Theme::Light) {
         QPalette defaultPalette;
         setPalette(defaultPalette);  // Editor palette
         QApplication::setPalette(defaultPalette);  // Application palette
 
-        themeChanged(Theme::Light);
+        m_theme = theme;
+        emit themeChanged(Theme::Light);
+        settings.setValue("theme", theme);
     }
     else if (theme == Theme::Dark) {
         QColor windowColor(53,53,53);
@@ -278,6 +325,8 @@ void MainWindow::setTheme(MainWindow::Theme theme)
         palette.setColor(QPalette::Disabled, QPalette::ButtonText, Qt::darkGray);
         QApplication::setPalette(palette);
 
-        themeChanged(Theme::Dark);
+        m_theme = theme;
+        emit themeChanged(Theme::Dark);
+        settings.setValue("theme", theme);
     }
 }

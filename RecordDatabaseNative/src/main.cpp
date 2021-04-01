@@ -2,18 +2,16 @@
 
 #include <QApplication>
 #include <QScreen>
-#include <QTranslator>
+#include <QLocale>
 
 int main(int argc, char *argv[])
-{
+{   
     QApplication app(argc, argv);
-
-    QTranslator translator;
-    translator.load("tr_TR.qm");
 
     QApplication::setOrganizationName("QtProject");
     QApplication::setApplicationName("Record Database Example");
-    QApplication::setApplicationDisplayName(QApplication::translate("app", "Record Database Editor"));
+
+    QLocale::setDefault(QLocale::system());
 
     MainWindow w;
 

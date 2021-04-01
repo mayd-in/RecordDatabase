@@ -32,6 +32,8 @@ set(SOURCE_FILES
 set(PROJECT_SOURCES
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
+    ${TS_FILES}
+    resources.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
