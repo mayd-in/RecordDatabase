@@ -1,5 +1,5 @@
 # Record Database
-Simple record database manager application in 3 different implementations
+Simple record database manager application in 3 different implementations.
 
 <table>
   <tr>
@@ -31,7 +31,7 @@ QML is used with C++ backend. All three implementations have their own tests for
 2. Easy record creation and save
 3. Powerful search functionality
 4. Theme support
-5. Multiple language support *(Soon)*
+5. Multiple language support
 
 ## Requirements
 
