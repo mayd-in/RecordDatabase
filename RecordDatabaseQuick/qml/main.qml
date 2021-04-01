@@ -18,6 +18,8 @@ ApplicationWindow {
     Component.onCompleted: {
         x = (Screen.width - width) / 2
         y = (Screen.height - height) / 2
+
+        Qt.application.displayName = Qt.binding(function() {return qsTr("Record Database Editor")})
     }
 
     function updateWindowProperties() {
@@ -197,6 +199,21 @@ ApplicationWindow {
 
         Menu {
             title: qsTr("&File")
+
+            Menu {
+                title: qsTr("&Language")
+
+                Repeater {
+                    Component.onCompleted: model = Language.model()  // Binding gives error on close
+
+                    MenuItem {
+                        // Native name of "en" is American English
+                        text: modelData != "en" ? Qt.locale(modelData).nativeLanguageName : "English"
+
+                        onTriggered: Language.setLanguage(modelData)
+                    }
+                }
+            }
 
             MenuItem {
                 action: newRecordAction
@@ -392,6 +409,7 @@ ApplicationWindow {
         title: qsTr("Save Changes?")
         focus: true
         standardButtons: Dialog.Save | Dialog.Discard |Dialog.Cancel
+        width: 500
         x: (mainWindow.width - width) / 2
         y: (mainWindow.height - height) / 3
 

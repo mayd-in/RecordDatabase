@@ -17,18 +17,22 @@ find_package(Qt${QT_VERSION_MAJOR} COMPONENTS Core Quick Sql LinguistTools REQUI
 set(INCLUDE_FILES
     src/recordmanager.h
     src/documenthandler.h
+    src/language.h
 )
 
 set(SOURCE_FILES
     src/main.cpp
     src/recordmanager.cpp
     src/documenthandler.cpp
+    src/language.cpp
 )
 
 set(PROJECT_SOURCES
     ${INCLUDE_FILES}
     ${SOURCE_FILES}
+    ${TS_FILES}
     qml.qrc
+    resources.qrc
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

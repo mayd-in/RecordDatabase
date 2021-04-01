@@ -7,6 +7,7 @@ Dialog {
     focus: true
     standardButtons: Dialog.Close
     title: qsTr("About")
+    width: 500
 
     x: (mainWindow.width - width) / 2
     y: (mainWindow.height - height) / 3
@@ -14,5 +15,7 @@ Dialog {
     Text {
         text: qsTr("<p><b>Record Database Editor</b> allows storing " +
                    "per contact information in files using a database.</p>")
+        width: parent.width
+        wrapMode: Text.Wrap
     }
 }
