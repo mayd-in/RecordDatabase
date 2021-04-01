@@ -10,11 +10,20 @@ from .dialogs import NewRecordDialog, OpenRecordDialog
 
 
 class MainWindow(QMainWindow):
-    Theme = enum.Enum('Theme', 'Light Dark')
-    themeChanged = pyqtSignal(Theme)
+    Theme = enum.Enum('Theme', 'Default Light Dark', start=0)
+    themeChanged = pyqtSignal()
 
     def __init__(self):
         super().__init__()
+
+        self.translator = QTranslator(self)
+        self.translatorQt = QTranslator(self)
+
+        settings = QSettings()
+        self.setLanguage(settings.value("language"))
+        self.setTheme(settings.value("theme", MainWindow.Theme.Light, type=int))
+
+        QApplication.setApplicationDisplayName(QApplication.translate("app", "Record Database Editor"))
 
         textEditor = TextEditor(self)
         textEditor.document().modificationChanged.connect(self.setWindowModified)
@@ -40,7 +49,6 @@ class MainWindow(QMainWindow):
         self.setupToolbars()
 
         self.updateWindowProperties()
-        self.setTheme(MainWindow.Theme.Dark)
 
     def setupMenus(self):
         fileMenu = QMenu(self.tr("&File"), self)
@@ -49,16 +57,38 @@ class MainWindow(QMainWindow):
         self.menuBar().addMenu(helpMenu)
 
         # FILE MENU
+        # Language
+        languageMenu = QMenu(self.tr("&Language"), self)
+
+        def changeLanguage(language):
+            settings = QSettings()
+            settings.setValue("language", QLocale(language))
+            QMessageBox.information(self, QApplication.applicationDisplayName(),
+                self.tr("The language change will take effect after restart."))
+
+        languages = QDir('translations/qm').entryList(['*.qm'])
+        for language in languages:
+            if language.startswith('qt'):
+                continue
+            language = language[:language.rfind('.')]  # en.qm -> en
+            locale = QLocale(language)
+            languageName = locale.nativeLanguageName() if language != 'en' else "English"
+            action = languageMenu.addAction(languageName, lambda language=language: changeLanguage(language))
+            action.setCheckable(True)
+            action.setChecked(locale == QLocale())
+
         # Theme
         actionThemeLight = QAction(self.tr("Light"), self)
         actionThemeLight.setCheckable(True)
         actionThemeLight.triggered.connect(lambda: self.setTheme(MainWindow.Theme.Light))
-        self.themeChanged.connect(lambda theme: actionThemeLight.setChecked(theme == MainWindow.Theme.Light))
+        self.themeChanged.connect(lambda: actionThemeLight.setChecked(self.theme == MainWindow.Theme.Light))
 
         actionThemeDark = QAction(self.tr("Dark"), self)
         actionThemeDark.setCheckable(True)
         actionThemeDark.triggered.connect(lambda: self.setTheme(MainWindow.Theme.Dark))
-        self.themeChanged.connect(lambda theme: actionThemeDark.setChecked(theme == MainWindow.Theme.Dark))
+        self.themeChanged.connect(lambda: actionThemeDark.setChecked(self.theme == MainWindow.Theme.Dark))
+
+        self.themeChanged.emit()
 
         themeGroup = QActionGroup(self)
         themeGroup.addAction(actionThemeLight)
@@ -80,6 +110,7 @@ class MainWindow(QMainWindow):
         saveRecordAction.setShortcut(QKeySequence(QKeySequence.Save))
         saveRecordAction.triggered.connect(self.recordSave)
 
+        fileMenu.addMenu(languageMenu)
         fileMenu.addMenu(themeMenu)
         fileMenu.addSeparator()
         fileMenu.addAction(newRecordAction)
@@ -144,7 +175,6 @@ class MainWindow(QMainWindow):
         toolbar.addSeparator()
         toolbar.addAction(self.textEditor.actionIndentMore)
         toolbar.addAction(self.textEditor.actionIndentLess)
-
 
     def recordNew(self, recordId, name, surname):
         if not self.maybeSave():
@@ -221,12 +251,32 @@ class MainWindow(QMainWindow):
             self.textEditor.setEnabled(False)
             self.setWindowTitle("[*]" + QApplication.applicationDisplayName())
 
+    def setLanguage(self, locale: QLocale):
+        QLocale.setDefault(locale)
+        language = locale.name()  # en_US
+        language = language[:language.rfind('_')]  # en
+
+        QApplication.removeTranslator(self.translator)
+        QApplication.removeTranslator(self.translatorQt)
+
+        self.translator.load(f"translations/qm/{language}.qm")
+        self.translatorQt.load(f"translations/qm/qtbase_{language}.qm")
+        QApplication.installTranslator(self.translator)
+        QApplication.installTranslator(self.translatorQt)
+
     def setTheme(self, theme):
-        if theme == MainWindow.Theme.Light:
+        theme = MainWindow.Theme(theme)
+
+        settings = QSettings()
+
+        if theme == MainWindow.Theme.Light or theme == MainWindow.Theme.Default:
             defaultPalette = QPalette()
             self.setPalette(defaultPalette)  # Editor palette
             QApplication.setPalette(defaultPalette)
-            self.themeChanged.emit(MainWindow.Theme.Light)
+
+            self.theme = theme
+            self.themeChanged.emit()
+            settings.setValue("theme", self.theme.value)
 
         elif theme == MainWindow.Theme.Dark:
             windowColor = QColor(53,53,53)
@@ -253,4 +303,7 @@ class MainWindow(QMainWindow):
             palette.setColor(QPalette.Disabled, QPalette.Text, Qt.darkGray)
             palette.setColor(QPalette.Disabled, QPalette.ButtonText, Qt.darkGray)
             QApplication.setPalette(palette)
-            self.themeChanged.emit(MainWindow.Theme.Dark)
+
+            self.theme = theme
+            self.themeChanged.emit()
+            settings.setValue("theme", self.theme.value)

@@ -1,6 +1,7 @@
 import sys
 
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QLocale
 
 from recorddatabase.mainwindow import MainWindow
 
@@ -9,7 +10,8 @@ if __name__ == "__main__":
 
     app.setOrganizationName("QtProject")
     app.setApplicationName("Record Database Example")
-    app.setApplicationDisplayName(app.tr("Record Database Editor"))
+
+    QLocale.setDefault(QLocale.system())
 
     w = MainWindow()
 
